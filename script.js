@@ -6,7 +6,6 @@ async function fetchCSVFile() {
         processAndRenderChart(data);
     } catch (error) {
         console.error("Error loading the CSV file:", error);
-        document.getElementById('status').innerText = "Failed to load the CSV file.";
     }
 }
 
@@ -23,60 +22,128 @@ function parseCSV(csvText) {
 }
 
 function processAndRenderChart(data) {
-    const ctx = document.getElementById('deliveryChart').getContext('2d');
-    const deliveryFees = data.slice(0, 1001).map(row => parseFloat(row["Delivery Fee"]));
+    // Aggregate data by date (daily totals for Order Value and Delivery Fee)
+    const dailyAggregates = {};
+    data.forEach(order => {
+        // Extract the date from "Order Date and Time"
+        const date = order["Order Date and Time"].split(" ")[0];
+        const orderValue = parseFloat(order["Order Value"]);
+        const deliveryFee = parseFloat(order["Delivery Fee"]);
 
-    // Group the delivery fees (count how many times each delivery fee occurs)
-    const feeGroups = deliveryFees.reduce((acc, fee) => {
-        acc[fee] = (acc[fee] || 0) + 1; // If fee exists, increment; otherwise, initialize to 1
-        return acc;
-    }, {});
+        if (!dailyAggregates[date]) {
+            dailyAggregates[date] = { orderValue: 0, deliveryFee: 0 };
+        }
+        
+        dailyAggregates[date].orderValue += orderValue;
+        dailyAggregates[date].deliveryFee += deliveryFee;
+    });
 
-    // Prepare the data for the Doughnut chart
-    const labels = Object.keys(feeGroups);  // Unique delivery fee values
-    const dataValues = Object.values(feeGroups);  // Count of each delivery fee
+    // Prepare data for the line chart
+    const labels = Object.keys(dailyAggregates); // Dates as labels
+    const orderValues = labels.map(date => dailyAggregates[date].orderValue);
+    const deliveryFees = labels.map(date => dailyAggregates[date].deliveryFee);
 
-    // Create Chart.js Doughnut chart
-    new Chart(ctx, {
-        type: 'doughnut',
+    renderLineChart(labels, orderValues, deliveryFees);
+}
+
+function renderLineChart(labels, orderValues, deliveryFees) {
+    const ctxLine = document.getElementById("orderLineChart").getContext("2d");
+
+    // Adding chart options for smoother transitions, tooltips, and interactivity
+    new Chart(ctxLine, {
+        type: 'line',
         data: {
-            labels: labels,  // Unique delivery fee values as labels
-            datasets: [{
-                label: 'Delivery Fee Distribution',
-                data: dataValues,  // Count of each delivery fee
-                backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 
-                                   'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)', 'rgba(255, 159, 64, 0.2)'],
-                borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 
-                              'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)'],
-                borderWidth: 1,
-            }]
+            labels: labels, // Dates as x-axis labels
+            datasets: [
+                {
+                    label: "Order Value",
+                    data: orderValues,
+                    fill: true,
+                    backgroundColor: "rgba(54, 162, 235, 0.3)", // Light blue fill
+                    borderColor: "rgba(54, 162, 235, 1)",  // Blue line
+                    borderWidth: 2,  // Thicker line for emphasis
+                    tension: 0.2,  // Slight curve to the line (small tension for smoothness)
+                    pointRadius: 4,  // Larger points
+                    pointBackgroundColor: "rgba(54, 162, 235, 1)", // Same as line color
+                },
+                {
+                    label: "Delivery Fee",
+                    data: deliveryFees,
+                    fill: true,
+                    backgroundColor: "rgba(255, 99, 132, 0.3)", // Light red fill
+                    borderColor: "rgba(255, 99, 132, 1)",  // Red line
+                    borderWidth: 2,  // Thicker line for emphasis
+                    tension: 0.2,  // Slight curve to the line
+                    pointRadius: 4,  // Larger points
+                    pointBackgroundColor: "rgba(255, 99, 132, 1)", // Same as line color
+                }
+            ]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false, // Allow resizing freely
+            aspectRatio: 1.5, // Adjust the aspect ratio (height / width) of the chart
             plugins: {
-                title: {
-                    display: true,  
-                    text: 'Delivery Fee Distribution',  
-                    font: {
-                        size: 20,  
-                        weight: 'bold',  
-                    },
-                    padding: {
-                        top: 10,
-                        bottom: 15,
+                legend: {
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,  // Use point style for the legend (circle)
+                        font: {
+                            size: 12,  // Smaller font for legend labels (can be adjusted)
+                            family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", // Cleaner font
+                        }
                     }
                 },
-                legend: {
-                    position: 'bottom',
-                },
                 tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    titleFont: { size: 12, weight: 'bold' },
+                    bodyFont: { size: 10 },
                     callbacks: {
                         label: function(tooltipItem) {
-                            const fee = tooltipItem.label;
-                            const count = feeGroups[fee];
-                            return `Delivery Fee: $${fee}, Count: ${count}`;
+                            return `${tooltipItem.dataset.label}: $${tooltipItem.raw.toFixed(2)}`;
                         }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Daily Trends: Order Value and Delivery Fee',
+                    font: { size: 14, weight: 'bold' },
+                    padding: { bottom: 10 },
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Amount ($)',
+                        font: { size: 12 },  // Smaller font for the y-axis title
+                    },
+                    grid: {
+                        borderColor: '#E0E0E0', // Light grey grid lines
+                        color: 'rgba(0, 0, 0, 0.1)', // Subtle grid lines
+                    },
+                    ticks: {
+                        font: { size: 10 }, // Smaller font for y-axis ticks
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date',
+                        font: { size: 12 },  // Smaller font for the x-axis title
+                    },
+                    grid: {
+                        borderColor: '#E0E0E0', // Light grey grid lines
+                        color: 'rgba(0, 0, 0, 0.1)', // Subtle grid lines
+                    },
+                    ticks: {
+                        font: { size: 10 }, // Smaller font for x-axis ticks
+                        autoSkip: true,
+                        maxRotation: 45, // Rotate labels to avoid overlap
+                        minRotation: 45,
                     }
                 }
             }
@@ -84,42 +151,6 @@ function processAndRenderChart(data) {
     });
 }
 
+
+
 fetchCSVFile();
-
-
-// const ctx = document.querySelector('#myChart');
-
-// const myChart = new Chart(ctx, {
-//     type: 'bar',
-//     data: {
-//         labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'], 
-//         datasets: [{
-//             label: '# of Votes',
-//             data: [12, 19, 3, 5, 2, 3],
-//             backgroundColor: [
-//                 'rgba(255, 99, 132, 0.2)',
-//                 'rgba(54, 162, 235, 0.2)',
-//                 'rgba(255, 206, 86, 0.2)',
-//                 'rgba(75, 192, 192, 0.2)',
-//                 'rgba(153, 102, 255, 0.2)',
-//                 'rgba(255, 159, 64, 0.2)'
-//             ],
-//             borderColor: [
-//                 'rgba(255, 99, 132, 1)',
-//                 'rgba(54, 162, 235, 1)',
-//                 'rgba(255, 206, 86, 1)',
-//                 'rgba(75, 192, 192, 1)',
-//                 'rgba(153, 102, 255, 1)',
-//                 'rgba(255, 159, 64, 1)'
-//             ],
-//             borderWidth: 1 // Border thickness
-//         }]
-//     },
-//     options: {
-//         scales: {
-//             y: {
-//                 beginAtZero: true // Ensure y-axis starts at 0
-//             }
-//         }
-//     }
-// });
