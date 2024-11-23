@@ -3,7 +3,8 @@ async function fetchCSVFile() {
         const response = await fetch('food_orders_new_delhi.csv');
         const csvText = await response.text();
         const data = parseCSV(csvText);
-        processAndRenderChart(data);
+        const sortedData = sortByOrderDate(data);
+        processAndRenderChart(sortedData);
     } catch (error) {
         console.error("Error loading the CSV file:", error);
     }
@@ -21,85 +22,94 @@ function parseCSV(csvText) {
     });
 }
 
+function sortByOrderDate(data) {
+    return data.sort((a, b) => {
+        const dateA = new Date(a['Order Date and Time']);
+        const dateB = new Date(b['Order Date and Time']);
+        return dateA - dateB; // Ascending order
+    });
+}
+
 function processAndRenderChart(data) {
-    // Aggregate data by date (daily totals for Order Value and Delivery Fee)
+    // Aggregate data by date (daily totals for Order Value and Commission Fee)
     const dailyAggregates = {};
     data.forEach(order => {
         // Extract the date from "Order Date and Time"
         const date = order["Order Date and Time"].split(" ")[0];
         const orderValue = parseFloat(order["Order Value"]);
-        const deliveryFee = parseFloat(order["Delivery Fee"]);
+        const CommissionFee = parseFloat(order["Commission Fee"]);
 
         if (!dailyAggregates[date]) {
-            dailyAggregates[date] = { orderValue: 0, deliveryFee: 0 };
+            dailyAggregates[date] = { orderValue: 0, CommissionFee: 0 };
         }
         
         dailyAggregates[date].orderValue += orderValue;
-        dailyAggregates[date].deliveryFee += deliveryFee;
+        dailyAggregates[date].CommissionFee += CommissionFee;
     });
 
-    // Prepare data for the line chart
-    const labels = Object.keys(dailyAggregates); // Dates as labels
+    const labels = Object.keys(dailyAggregates); 
     const orderValues = labels.map(date => dailyAggregates[date].orderValue);
-    const deliveryFees = labels.map(date => dailyAggregates[date].deliveryFee);
+    const CommissionFees = labels.map(date => dailyAggregates[date].CommissionFee);
 
-    renderLineChart(labels, orderValues, deliveryFees);
+    renderLineChart(labels, orderValues, CommissionFees);
 }
 
-function renderLineChart(labels, orderValues, deliveryFees) {
+function renderLineChart(labels, orderValues, CommissionFees) {
     const ctxLine = document.getElementById("orderLineChart").getContext("2d");
+    ctxLine.canvas.height = 500;
+    ctxLine.canvas.width = 1300;
 
-    // Adding chart options for smoother transitions, tooltips, and interactivity
     new Chart(ctxLine, {
         type: 'line',
         data: {
-            labels: labels, // Dates as x-axis labels
+            labels: labels, 
             datasets: [
                 {
                     label: "Order Value",
                     data: orderValues,
                     fill: true,
-                    backgroundColor: "rgba(54, 162, 235, 0.3)", // Light blue fill
-                    borderColor: "rgba(54, 162, 235, 1)",  // Blue line
-                    borderWidth: 2,  // Thicker line for emphasis
-                    tension: 0.2,  // Slight curve to the line (small tension for smoothness)
-                    pointRadius: 4,  // Larger points
-                    pointBackgroundColor: "rgba(54, 162, 235, 1)", // Same as line color
+                    backgroundColor: "rgba(54, 162, 235, 0.3)", 
+                    borderColor: "rgba(54, 162, 235, 1)",  
+                    borderWidth: 2, 
+                    tension: 0.4,  
+                    pointRadius: 4,  
+                    pointBackgroundColor: "rgba(54, 162, 235, 1)",
                 },
                 {
-                    label: "Delivery Fee",
-                    data: deliveryFees,
+                    label: "Commission Fee",
+                    data: CommissionFees,
                     fill: true,
-                    backgroundColor: "rgba(255, 99, 132, 0.3)", // Light red fill
-                    borderColor: "rgba(255, 99, 132, 1)",  // Red line
-                    borderWidth: 2,  // Thicker line for emphasis
-                    tension: 0.2,  // Slight curve to the line
-                    pointRadius: 4,  // Larger points
-                    pointBackgroundColor: "rgba(255, 99, 132, 1)", // Same as line color
+                    backgroundColor: "rgba(242, 10, 110, 0.3)",
+                    borderColor: "rgba(242, 10, 110, 1)", 
+                    borderWidth: 2, 
+                    tension: 0.4, 
+                    pointRadius: 4, 
+                    pointBackgroundColor: "rgba(242, 10, 110, 1)", 
                 }
             ]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false, // Allow resizing freely
-            aspectRatio: 1.5, // Adjust the aspect ratio (height / width) of the chart
+            responsive: false,
+            maintainAspectRatio: false, 
+            aspectRatio: 1.5,
             plugins: {
                 legend: {
-                    position: 'top',
+                    position: 'bottom',
                     labels: {
-                        usePointStyle: true,  // Use point style for the legend (circle)
+                        usePointStyle: true, 
                         font: {
-                            size: 12,  // Smaller font for legend labels (can be adjusted)
-                            family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", // Cleaner font
-                        }
+                            size: 15,  
+                            family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", 
+                        },
+                        padding: 20,  
                     }
                 },
                 tooltip: {
                     mode: 'index',
                     intersect: false,
                     backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                    titleFont: { size: 12, weight: 'bold' },
-                    bodyFont: { size: 10 },
+                    titleFont: { size: 15, weight: 'bold' },
+                    bodyFont: { size: 15 },
                     callbacks: {
                         label: function(tooltipItem) {
                             return `${tooltipItem.dataset.label}: $${tooltipItem.raw.toFixed(2)}`;
@@ -108,8 +118,8 @@ function renderLineChart(labels, orderValues, deliveryFees) {
                 },
                 title: {
                     display: true,
-                    text: 'Daily Trends: Order Value and Delivery Fee',
-                    font: { size: 14, weight: 'bold' },
+                    text: 'Daily Trends: Order Value and Commission Fee',
+                    font: { size: 20, weight: 'bold' },
                     padding: { bottom: 10 },
                 }
             },
@@ -119,30 +129,30 @@ function renderLineChart(labels, orderValues, deliveryFees) {
                     title: {
                         display: true,
                         text: 'Amount ($)',
-                        font: { size: 12 },  // Smaller font for the y-axis title
+                        font: { size: 15 },  
                     },
                     grid: {
-                        borderColor: '#E0E0E0', // Light grey grid lines
-                        color: 'rgba(0, 0, 0, 0.1)', // Subtle grid lines
+                        borderColor: '#E0E0E0',
+                        color: 'rgba(0, 0, 0, 0.1)', 
                     },
                     ticks: {
-                        font: { size: 10 }, // Smaller font for y-axis ticks
+                        font: { size: 15 }, 
                     }
                 },
                 x: {
                     title: {
                         display: true,
                         text: 'Date',
-                        font: { size: 12 },  // Smaller font for the x-axis title
+                        font: { size: 15 }, 
                     },
                     grid: {
-                        borderColor: '#E0E0E0', // Light grey grid lines
-                        color: 'rgba(0, 0, 0, 0.1)', // Subtle grid lines
+                        borderColor: '#E0E0E0', 
+                        color: 'rgba(0, 0, 0, 0.1)', 
                     },
                     ticks: {
-                        font: { size: 10 }, // Smaller font for x-axis ticks
+                        font: { size: 12 },
                         autoSkip: true,
-                        maxRotation: 45, // Rotate labels to avoid overlap
+                        maxRotation: 45, 
                         minRotation: 45,
                     }
                 }
