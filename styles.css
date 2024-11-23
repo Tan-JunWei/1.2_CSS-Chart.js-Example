@@ -30,9 +30,9 @@ body, html {
     color: #f1f1f1;
 }
 
-#sidebar button {
-    width: 100%; 
-    padding: 13px 20px;
+#sidebar .sidebar-link{
+    width: 85%; 
+    padding: 15px 20px;
     margin: 5px 0;
     font-size: 18px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -43,17 +43,22 @@ body, html {
     text-align: left;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    text-decoration: none;  /* Remove underline from links */
 }
 
-#sidebar button:hover {
-    background-color: #2991ec; 
+#sidebar .sidebar-link:hover {
+    background-color: #1e82d9; 
 }
 
-.content{
-    display:flex;
+#content {
+    display: flex;           
+    flex-wrap: wrap;       
+    gap: 20px;               
+    justify-content: center; 
+    padding: 20px;
 }
 
-#orderLineChart{
+#orderLineChart, #paymentPieChart{
     background-color: white;
     padding: 15px;
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);

@@ -52,6 +52,14 @@ function processAndRenderChart(data) {
     const CommissionFees = labels.map(date => dailyAggregates[date].CommissionFee);
 
     renderLineChart(labels, orderValues, CommissionFees);
+
+    const paymentMethods = data.map(order => order["Payment Method"]);
+    const uniquePaymentMethods = [...new Set(paymentMethods)];
+    const paymentMethodCounts = uniquePaymentMethods.map(method => {
+        return paymentMethods.filter(paymentMethod => paymentMethod === method).length;
+    });
+
+    renderPieChart(uniquePaymentMethods, paymentMethodCounts);
 }
 
 function renderLineChart(labels, orderValues, CommissionFees) {
@@ -161,6 +169,65 @@ function renderLineChart(labels, orderValues, CommissionFees) {
     });
 }
 
+function renderPieChart(paymentMethodLabels, paymentMethodCounts){
+    const ctxPie = document.getElementById("paymentPieChart").getContext("2d");
+    ctxPie.canvas.height = 400;
+    ctxPie.canvas.width = 400;
+
+    new Chart(ctxPie, {
+        type: 'pie',
+        data: {
+            labels: paymentMethodLabels,
+            datasets: [
+                {
+                    data: paymentMethodCounts,
+                    backgroundColor: [
+                        "rgba(255, 99, 132, 0.7)",
+                        "rgba(54, 162, 235, 0.7)",
+                        "rgba(255, 206, 86, 0.7)",
+                        "rgba(75, 192, 192, 0.7)",
+                        "rgba(153, 102, 255, 0.7)",
+                        "rgba(255, 159, 64, 0.7)"
+                    ]
+                }
+            ]
+        },
+        options: {
+            responsive: false,
+            maintainAspectRatio: false,
+            aspectRatio: 1,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        font: {
+                            size: 15,
+                            family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                        },
+                        padding: 20,
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    titleFont: { size: 15, weight: 'bold' },
+                    bodyFont: { size: 15 },
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.parsed.toFixed(0)} orders`;
+                        }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Payment Method Distribution',
+                    font: { size: 20, weight: 'bold' },
+                    padding: { bottom: 10 },
+                }
+            }
+        }
+    });
+}
 
 
 fetchCSVFile();

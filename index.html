@@ -9,13 +9,17 @@
 </head>
 <body>
     <div id="container">
+
         <div id="sidebar">
             <h2>Menu</h2>
-            <button id="dashboard">Dashboard</button>
-            <button id="analytics">Analytics</button>
+            <a href="./index.html" class="sidebar-link">Dashboard</a>
+            <a class="sidebar-link">Analytics</a>
+            <a class="sidebar-link">Discussion</a>
         </div>
+
         <div id="content">
-            <canvas id="orderLineChart" width="600" height="400"></canvas>
+            <canvas id="orderLineChart"></canvas>
+            <canvas id="paymentPieChart"></canvas>
         </div>
     </div>
     
