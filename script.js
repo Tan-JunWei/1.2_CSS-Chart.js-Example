@@ -65,7 +65,7 @@ function processAndRenderChart(data) {
 function renderLineChart(labels, orderValues, CommissionFees) {
     const ctxLine = document.getElementById("orderLineChart").getContext("2d");
     ctxLine.canvas.height = 500;
-    ctxLine.canvas.width = 1300;
+    ctxLine.canvas.width = 1400;
 
     new Chart(ctxLine, {
         type: 'line',
