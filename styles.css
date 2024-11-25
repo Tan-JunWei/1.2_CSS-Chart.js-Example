@@ -2,6 +2,7 @@ body, html {
     height: 100%;
     margin: 0;
     background-color: #f2f8fc;
+    overflow: hidden;
 }
 
 #container{
@@ -15,7 +16,7 @@ body, html {
     width: 250px;
     background-color: #1e3a8a; 
     color: #ffffff; 
-    padding: 20px 35px 20px 15px; /* Top, Right, Bottom, Left */
+    padding: 20px 40px 20px 15px; /* Top, Right, Bottom, Left */
     box-shadow: 2px 0 5px rgba(238, 195, 195, 0.1);
     display: flex;
     flex-direction: column;
@@ -31,30 +32,30 @@ body, html {
 }
 
 #sidebar .sidebar-link{
-    width: 85%; 
+    width: 85%;
     padding: 15px 20px;
     margin: 5px 0;
     font-size: 18px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #ffffff;
-    background-color: #1e47b8; 
+    background-color: #1e47b8;
     border: none;
     border-radius: 5px;
     text-align: left;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    text-decoration: none;  /* Remove underline from links */
+    text-decoration: none;
 }
 
 #sidebar .sidebar-link:hover {
-    background-color: #1e82d9; 
+    background-color: #1e82d9;
 }
 
 #content {
     margin-left: 5%;
-    display: flex;           
-    flex-wrap: wrap;       
-    gap: 20px;               
+    display: flex;         
+    flex-wrap: wrap;
+    gap: 20px;
     justify-content: flex-start; 
     padding: 20px;
 }
