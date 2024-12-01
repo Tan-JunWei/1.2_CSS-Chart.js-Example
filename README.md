@@ -1,5 +1,5 @@
 # CSS Chart.js Example
-CSS (Client-Side Scripting) is a module in semester 1.2 of the Cybersecurity and Digital Forensics(CSF) course in Ngee Ann Polytechnic. The objective of this assignment is to research about one library in the JavaScript ecosystem of open-source libraries.
+CSS (Client-Side Scripting) is a module in semester 1.2 of the Cybersecurity and Digital Forensics (CSF) course in Ngee Ann Polytechnic. The objective of this assignment is to research about one library in the JavaScript ecosystem of open-source libraries.
 
 ### Example Dashboard created using Chart.js
 
@@ -10,11 +10,11 @@ CSS (Client-Side Scripting) is a module in semester 1.2 of the Cybersecurity and
 
 This dashboard was created using Chart.js. Chart.js is a free, popular JavaScript library designed for making interactive and visually appealing HTML-based data visualizations. It is lightweight, easy to use, and supports a wide variety of chart types. Chart.js is also highly customisable with custom plugins to create outstanding visual effects like zoom and interactions.
 
-For this assignment, I explored Chart.js to create an interactive dashboard visualizing data from [this Food Delivery Timing Dataset](https://www.kaggle.com/code/darrylljk/food-delivery-timing-is-everything). 
+For this assignment, I explored Chart.js to create an interactive dashboard visualizing data from [this Food Delivery Timing Dataset](https://www.kaggle.com/code/darrylljk/food-delivery-timing-is-everything) from Kaggle to experiment on real-world data. 
 
 ### Dataset Overview
 
-The dataset contains information about food delivery performance in New Delhi, India, including: 
+The dataset contains information about food delivery performance in 2024 in New Delhi, India, including: 
 - Order and delivery data: Dates and times of orders and deliveries
 - Payment methods: Preferred payment modes of customers (cash on delivery, digital wallets, credit card)
 - Order values: Value of each order 
@@ -29,3 +29,5 @@ The above dashboard visualizes some key insights from this dataset to provide a 
 
 2. Stacked Line Chart
 - Presents daily trends in order values and associated commission fees
+
+Since this is meant to be just a short demonstration about how this library can be used, I chose to keep it simple and not overpopulate it with too many charts and data.
